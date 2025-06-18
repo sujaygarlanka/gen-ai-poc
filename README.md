@@ -1,0 +1,130 @@
+# Gen AI POC
+
+A Flask application with Data USA API integration and automated deployment to AWS.
+
+## Project Structure
+
+```
+gen-ai-poc/
+├── src/                    # Application source code
+│   └── app.py             # Flask application
+├── tests/                  # Test files
+│   └── test_app.py        # Application tests
+├── infra/                  # Infrastructure files
+│   ├── Dockerfile         # Container definition
+│   └── ecs-task-def.json  # ECS task definition
+├── scripts/                # Utility scripts
+│   └── cli_tool.py        # CLI tool for Amazon Q integration
+├── .github/workflows/      # GitHub Actions
+│   ├── python-app.yml     # Test workflow
+│   └── deploy-to-aws.yml  # Deployment workflow
+└── requirements.txt        # Python dependencies
+```
+
+## Setup
+
+1. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. Set up GitHub token:
+   ```bash
+   export GITHUB_TOKEN="your_github_personal_access_token"
+   ```
+
+3. Install AWS CLI and configure Amazon Q:
+   ```bash
+   aws configure
+   ```
+
+## Usage
+
+### Running the Flask App
+
+```bash
+python src/app.py
+```
+
+### Running Tests
+
+```bash
+pytest
+```
+
+### Using the CLI Tool
+
+The CLI tool provides two commands for working with Amazon Q agent and GitHub.
+
+#### Create Command (Full Workflow)
+
+Creates a new branch, calls Amazon Q agent, and creates a pull request.
+
+**Basic Usage:**
+```bash
+python scripts/cli_tool.py create "Add a new endpoint for user authentication"
+```
+
+**Advanced Usage:**
+```bash
+python scripts/cli_tool.py create "Implement OAuth2 authentication" \
+  --branch-name "feature/oauth2-auth" \
+  --commit-message "Add OAuth2 authentication endpoints" \
+  --pr-title "Feature: OAuth2 Authentication" \
+  --pr-description "Implements OAuth2 authentication flow with Google and GitHub providers"
+```
+
+#### Update Command (Quick Updates)
+
+Calls Amazon Q agent and pushes changes to the current branch (no new branch or PR).
+
+**Basic Usage:**
+```bash
+python scripts/cli_tool.py update "Fix the authentication bug in login endpoint"
+```
+
+**With Custom Commit Message:**
+```bash
+python scripts/cli_tool.py update "Add input validation to user registration" \
+  --commit-message "Add comprehensive input validation for user registration form"
+```
+
+#### Command Options
+
+**Create Command Options:**
+- `prompt`: The prompt to send to Amazon Q agent (required)
+- `--branch-name`: Custom branch name (auto-generated if not provided)
+- `--commit-message`: Custom commit message (auto-generated if not provided)
+- `--pr-title`: Custom pull request title (auto-generated if not provided)
+- `--pr-description`: Custom pull request description
+- `--github-token`: GitHub personal access token (can also use GITHUB_TOKEN env var)
+
+**Update Command Options:**
+- `prompt`: The prompt to send to Amazon Q agent (required)
+- `--commit-message`: Custom commit message (auto-generated if not provided)
+
+## API Endpoints
+
+- `GET /hello` - Simple greeting endpoint
+- `GET /datausa/top-earning-state` - State with highest median household income
+- `GET /datausa/youngest-large-county` - County with lowest median age
+- `GET /datausa/largest-counties` - Top 5 counties by population
+- `GET /datausa/most-expensive-housing-state` - State with highest median property value
+
+## Deployment
+
+The application is automatically deployed to AWS ECS when code is merged to the main branch.
+
+## Contributing
+
+1. Use the CLI tool to create feature branches with Amazon Q assistance
+2. Use the update command for quick fixes and improvements
+3. Ensure all tests pass before creating pull requests
+4. Follow the established project structure
+
+## Requirements
+
+- Python 3.11+
+- AWS CLI with Amazon Q configured
+- GitHub personal access token
+- Docker (for containerization) 
