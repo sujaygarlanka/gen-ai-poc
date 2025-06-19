@@ -1,0 +1,267 @@
+#%RAML 1.0
+title: Gen AI POC API
+version: v1.0
+baseUri: http://localhost:8080
+description: |
+  A Flask application with Data USA API integration.
+  This API provides access to various US demographic and economic data endpoints.
+
+/hello:
+  get:
+    description: Returns a simple greeting message
+    responses:
+      200:
+        description: Successful response with greeting message
+        body:
+          application/json:
+            example: |
+              {
+                "message": "Hello, world!"
+              }
+            schema: |
+              {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "description": "Greeting message"
+                  }
+                },
+                "required": ["message"]
+              }
+
+/datausa:
+  /top-earning-state:
+    get:
+      description: Returns the state with the highest median household income for 2023
+      responses:
+        200:
+          description: Successful response with top earning state data
+          body:
+            application/json:
+              example: |
+                {
+                  "data": [
+                    {
+                      "State": "District of Columbia",
+                      "Year": "2023",
+                      "Median Household Income": 106287
+                    }
+                  ],
+                  "source": [
+                    {
+                      "measures": ["Median Household Income"],
+                      "annotations": {
+                        "source_name": "Census Bureau",
+                        "source_description": "Census Bureau conducts surveys of the United States Population",
+                        "dataset_name": "ACS 1-year Estimate",
+                        "topic": "Income"
+                      }
+                    }
+                  ]
+                }
+              schema: |
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "State": {"type": "string"},
+                          "Year": {"type": "string"},
+                          "Median Household Income": {"type": "number"}
+                        }
+                      }
+                    },
+                    "source": {"type": "array"}
+                  }
+                }
+
+  /youngest-large-county:
+    get:
+      description: Returns the county with the lowest median age for 2023
+      responses:
+        200:
+          description: Successful response with youngest large county data
+          body:
+            application/json:
+              example: |
+                {
+                  "data": [
+                    {
+                      "County": "Utah County, UT",
+                      "Year": "2023",
+                      "Median Age": 25.5
+                    }
+                  ],
+                  "source": [
+                    {
+                      "measures": ["Median Age"],
+                      "annotations": {
+                        "source_name": "Census Bureau",
+                        "source_description": "Census Bureau conducts surveys of the United States Population",
+                        "dataset_name": "ACS 1-year Estimate",
+                        "topic": "Demographics"
+                      }
+                    }
+                  ]
+                }
+              schema: |
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "County": {"type": "string"},
+                          "Year": {"type": "string"},
+                          "Median Age": {"type": "number"}
+                        }
+                      }
+                    },
+                    "source": {"type": "array"}
+                  }
+                }
+
+  /largest-counties:
+    get:
+      description: Returns the top 5 counties by population for 2023
+      responses:
+        200:
+          description: Successful response with largest counties data
+          body:
+            application/json:
+              example: |
+                {
+                  "data": [
+                    {
+                      "County": "Harris County, TX",
+                      "Year": "2023",
+                      "Population": 4760000
+                    },
+                    {
+                      "County": "Maricopa County, AZ",
+                      "Year": "2023",
+                      "Population": 4500000
+                    },
+                    {
+                      "County": "Los Angeles County, CA",
+                      "Year": "2023",
+                      "Population": 9900000
+                    },
+                    {
+                      "County": "Cook County, IL",
+                      "Year": "2023",
+                      "Population": 5200000
+                    },
+                    {
+                      "County": "San Diego County, CA",
+                      "Year": "2023",
+                      "Population": 3300000
+                    }
+                  ],
+                  "source": [
+                    {
+                      "measures": ["Population"],
+                      "annotations": {
+                        "source_name": "Census Bureau",
+                        "source_description": "Census Bureau conducts surveys of the United States Population",
+                        "dataset_name": "ACS 1-year Estimate",
+                        "topic": "Population"
+                      }
+                    }
+                  ]
+                }
+              schema: |
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "County": {"type": "string"},
+                          "Year": {"type": "string"},
+                          "Population": {"type": "number"}
+                        }
+                      }
+                    },
+                    "source": {"type": "array"}
+                  }
+                }
+
+  /most-expensive-housing-state:
+    get:
+      description: Returns the state with the highest median property value for 2023 (Hawaii)
+      responses:
+        200:
+          description: Successful response with most expensive housing state data
+          body:
+            application/json:
+              example: |
+                {
+                  "data": [
+                    {
+                      "State": "Hawaii",
+                      "Year": "2023",
+                      "Median Property Value": 808200
+                    }
+                  ],
+                  "source": [
+                    {
+                      "measures": ["Median Property Value"],
+                      "annotations": {
+                        "source_name": "Census Bureau",
+                        "source_description": "Census Bureau conducts surveys of the United States Population",
+                        "dataset_name": "ACS 1-year Estimate",
+                        "topic": "Housing"
+                      }
+                    }
+                  ]
+                }
+              schema: |
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "State": {"type": "string"},
+                          "Year": {"type": "string"},
+                          "Median Property Value": {"type": "number"}
+                        }
+                      }
+                    },
+                    "source": {"type": "array"}
+                  }
+                }
+
+# Global error responses
+/:
+  get:
+    responses:
+      404:
+        description: Endpoint not found
+        body:
+          application/json:
+            example: |
+              {
+                "error": "Not Found",
+                "message": "The requested URL was not found on the server"
+              }
+      500:
+        description: Internal server error
+        body:
+          application/json:
+            example: |
+              {
+                "error": "Internal Server Error",
+                "message": "An unexpected error occurred"
+              } 

@@ -46,10 +46,53 @@ gen-ai-poc/
 python src/app.py
 ```
 
+The application will be available at `http://localhost:8080`
+
 ### Running Tests
 
 ```bash
 pytest
+```
+
+### Running with Docker
+
+Build the Docker image:
+```bash
+docker build -f infra/Dockerfile -t gen-ai-poc .
+```
+
+Run the container locally:
+```bash
+docker run -p 8080:8080 gen-ai-poc
+```
+
+The application will be available at `http://localhost:8080`
+
+**Alternative: Build and run in one command:**
+```bash
+docker build -f infra/Dockerfile -t gen-ai-poc . && docker run -p 8080:8080 gen-ai-poc
+```
+
+### Deploying to AWS ECR
+
+Build for x86_64 architecture:
+```bash
+docker build --platform linux/amd64 -f infra/Dockerfile -t gen-ai-poc .
+```
+
+Tag the image for ECR:
+```bash
+docker tag gen-ai-poc:latest public.ecr.aws/b8p9r6a3/allwyn/gen-ai-poc:latest
+```
+
+Authenticate with ECR:
+```bash
+aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+```
+
+Push to ECR:
+```bash
+docker push public.ecr.aws/b8p9r6a3/allwyn/gen-ai-poc:latest
 ```
 
 ### Using the CLI Tool
