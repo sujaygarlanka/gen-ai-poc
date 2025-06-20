@@ -21,21 +21,36 @@ gen-ai-poc/
 └── requirements.txt        # Python dependencies
 ```
 
+## Prerequisites
+
+- Python 3.8+
+- Git
+- AWS CLI with Amazon Q configured
+- GitHub CLI (gh) installed and authenticated
+- Docker (for containerization)
+
 ## Setup
 
-1. Install dependencies:
+1. **Install GitHub CLI**:
+   ```bash
+   # macOS
+   brew install gh
+   
+   # Ubuntu/Debian
+   sudo apt install gh
+   
+   # Windows
+   winget install GitHub.cli
+   ```
+
+2. **Authenticate GitHub CLI**:
+   ```bash
+   gh auth login
+   ```
+
+3. **Install Python dependencies**:
    ```bash
    pip install -r requirements.txt
-   ```
-
-2. Set up GitHub token:
-   ```bash
-   export GITHUB_TOKEN="your_github_personal_access_token"
-   ```
-
-3. Install AWS CLI and configure Amazon Q:
-   ```bash
-   aws configure
    ```
 
 ## Usage
