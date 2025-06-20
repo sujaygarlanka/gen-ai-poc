@@ -37,23 +37,47 @@ def call_amazon_q_agent(prompt):
     print(f"Calling Amazon Q agent with prompt")
     
     try:
-        # Use subprocess to pipe the prompt to q chat
+        # Use subprocess to pipe the prompt to q chat and show output in real-time
         process = subprocess.Popen(
             ['q', 'chat', '--no-interactive', '--trust-all-tools'],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True
+            text=True,
+            bufsize=1,
+            universal_newlines=True
         )
         
         # Send the prompt
-        stdout, stderr = process.communicate(input=prompt)
+        process.stdin.write(prompt)
+        process.stdin.close()
         
-        if process.returncode == 0:
+        # Read and display output in real-time
+        print("\n" + "="*50)
+        print("Amazon Q Agent Output:")
+        print("="*50)
+        
+        while True:
+            output = process.stdout.readline()
+            if output == '' and process.poll() is not None:
+                break
+            if output:
+                print(output.rstrip())
+        
+        # Wait for process to complete
+        return_code = process.wait()
+        
+        print("="*50)
+        print("Amazon Q Agent completed")
+        print("="*50 + "\n")
+        
+        if return_code == 0:
             print("Amazon Q agent response received")
             return True
         else:
-            print(f"Error from Amazon Q agent: {stderr}")
+            stderr_output = process.stderr.read()
+            if stderr_output:
+                print(f"Error from Amazon Q agent: {stderr_output}")
             return None
             
     except Exception as e:
@@ -99,6 +123,24 @@ def get_diff_from_main():
         print(f"Error getting git diff from main: {e}")
         return None
 
+def clean_ansi_codes(text):
+    """Remove ANSI escape codes and color sequences from text."""
+    if not text:
+        return text
+    
+    # Remove ANSI color codes (e.g., [38;5;13m, [1m, [0m)
+    ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+    cleaned = ansi_escape.sub('', text)
+    
+    # Remove any remaining escape sequences
+    cleaned = re.sub(r'\[[0-9;]*[a-zA-Z]', '', cleaned)
+    
+    # Clean up extra whitespace and newlines
+    cleaned = re.sub(r'\n\s*\n\s*\n', '\n\n', cleaned)
+    cleaned = cleaned.strip()
+    
+    return cleaned
+
 def generate_pr_summary(diff_content):
     """Use Amazon Q agent to generate a markdown summary of the changes."""
     if not diff_content:
@@ -127,8 +169,8 @@ Please provide a well-formatted markdown summary suitable for a PR description."
         stdout, stderr = process.communicate(input=input_data)
         
         if process.returncode == 0 and stdout:
-            # Clean up the response and ensure it's markdown
-            summary = stdout.strip()
+            # Clean ANSI codes and ensure it's markdown
+            summary = clean_ansi_codes(stdout.strip())
             if not summary.startswith('#'):
                 summary = f"## Summary\n\n{summary}"
             return summary
