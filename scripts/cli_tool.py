@@ -327,59 +327,48 @@ def sanitize_raml_content(raml_content):
     return sanitized
 
 def parse_raml_endpoints(raml_content):
-    """Parse RAML content and extract all endpoints."""
+    """Parse RAML content and extract all endpoints using YAML parsing."""
     endpoints = []
     
     if not raml_content:
         return endpoints
     
-    # Split RAML content into lines
-    lines = raml_content.split('\n')
-    
-    for i, line in enumerate(lines):
-        line = line.strip()
+    try:
+        import yaml
         
-        # Look for endpoint patterns (paths starting with /)
-        if line.startswith('/') and ':' not in line:
-            endpoint_path = line
-            description = ""
-            
-            # Look for description in the next few lines
-            for j in range(i + 1, min(i + 10, len(lines))):
-                next_line = lines[j].strip()
-                if next_line.startswith('description:'):
-                    description = next_line.replace('description:', '').strip()
-                    break
-                elif next_line.startswith('/') or next_line.startswith('#'):
-                    break
-            
-            # Look for HTTP methods
-            methods = []
-            for j in range(i + 1, min(i + 20, len(lines))):
-                next_line = lines[j].strip()
-                if next_line in ['get:', 'post:', 'put:', 'delete:', 'patch:']:
-                    methods.append(next_line.replace(':', '').upper())
-                elif next_line.startswith('/') or next_line.startswith('#'):
-                    break
-            
-            if methods:
-                for method in methods:
-                    endpoints.append({
-                        'path': endpoint_path,
-                        'method': method,
-                        'description': description,
-                        'full_endpoint': f"{method} {endpoint_path}"
-                    })
-            else:
-                # If no methods found, assume GET
-                endpoints.append({
-                    'path': endpoint_path,
-                    'method': 'GET',
-                    'description': description,
-                    'full_endpoint': f"GET {endpoint_path}"
-                })
-    
-    return endpoints
+        # Parse RAML as YAML
+        raml_dict = yaml.safe_load(raml_content)
+        
+        # Extract endpoints from parsed RAML
+        if raml_dict and isinstance(raml_dict, dict):
+            # Look for resources/endpoints in the RAML structure
+            for key, value in raml_dict.items():
+                if key.startswith('/') and isinstance(value, dict):
+                    # This is an endpoint
+                    path = key
+                    
+                    # Extract methods from the endpoint
+                    for method_key, method_value in value.items():
+                        if method_key.lower() in ['get', 'post', 'put', 'delete', 'patch']:
+                            method_name = method_key.upper()
+                            description = ""
+                            
+                            # Extract description if available
+                            if isinstance(method_value, dict) and 'description' in method_value:
+                                description = method_value['description']
+                            
+                            endpoints.append({
+                                'path': path,
+                                'method': method_name,
+                                'description': description,
+                                'full_endpoint': f"{method_name} {path}"
+                            })
+        
+        return endpoints
+        
+    except Exception as e:
+        print(f"Error parsing RAML: {e}")
+        return []
 
 def show_endpoint_selector(endpoints):
     """Show a CLI selector for endpoints."""

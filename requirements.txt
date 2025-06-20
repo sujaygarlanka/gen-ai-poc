@@ -1,3 +1,4 @@
 Flask
 pytest
-requests 
+requests>=2.25.1
+pyyaml>=6.0 
