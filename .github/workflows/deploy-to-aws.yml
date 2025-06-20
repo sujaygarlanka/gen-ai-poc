@@ -42,6 +42,17 @@ jobs:
           docker build -f infra/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
+      - name: Debug ECS cluster and services
+        run: |
+          echo "Listing all clusters:"
+          aws ecs list-clusters
+          echo ""
+          echo "Listing services in cluster ${{ secrets.ECS_CLUSTER }}:"
+          aws ecs list-services --cluster ${{ secrets.ECS_CLUSTER }}
+          echo ""
+          echo "Cluster name: ${{ secrets.ECS_CLUSTER }}"
+          echo "Service name: ${{ secrets.ECS_SERVICE }}"
+
       - name: Update ECS service with force new deployment
         run: |
           aws ecs update-service \
