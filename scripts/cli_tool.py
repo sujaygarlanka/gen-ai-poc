@@ -413,7 +413,7 @@ def show_endpoint_selector(endpoints):
             print("\nSelection cancelled")
             return None
 
-def mulesoft_migr_command(prompt, endpoint, branch_name, commit_message):
+def mulesoft_migr_command(prompt, branch_name, commit_message):
     """Mulesoft migration command: full workflow with new branch and PR."""
     print("🔄 Mulesoft Migration mode: Creating new branch and pull request")
     
@@ -449,24 +449,25 @@ def mulesoft_migr_command(prompt, endpoint, branch_name, commit_message):
                     print("No endpoint selected. Exiting...")
                     return False
                 
-                # Use selected endpoint instead of provided endpoint
+                # Use selected endpoint
                 endpoint = selected_endpoint['full_endpoint']
                 print(f"Using endpoint: {endpoint}")
             else:
-                print("No endpoints found in RAML. Using provided endpoint.")
+                print("No endpoints found in RAML. Exiting...")
+                return False
+        else:
+            print("No RAML file found. Exiting...")
+            return False
         
         # Step 5: Call Amazon Q agent with endpoint and RAML context
-        if raml_content:
-            # Sanitize RAML content
-            sanitized_raml = raml_content
-            enhanced_prompt = f"""Migrate the following Mulesoft endpoint to python: {endpoint}
+        # Sanitize RAML content
+        sanitized_raml = raml_content
+        enhanced_prompt = f"""Migrate the following Mulesoft endpoint to python: {endpoint}
 
 API Specification (RAML):
 {sanitized_raml}
 
 Additional requirements: {prompt}"""
-        else:
-            enhanced_prompt = f"Migrate the following Mulesoft endpoint to python: {endpoint}. {prompt}"
         
         print("Calling Amazon Q agent with RAML specification...")
         agent_response = call_amazon_q_agent(enhanced_prompt)
@@ -527,7 +528,6 @@ def main():
     
     # Mulesoft migration command
     mulesoft_parser = subparsers.add_parser('mulesoft-migr', help='Migrate Mulesoft endpoint to AWS with Amazon Q agent')
-    mulesoft_parser.add_argument("endpoint", help="The Mulesoft endpoint to migrate")
     mulesoft_parser.add_argument("prompt", help="Additional prompt for the Amazon Q agent")
     mulesoft_parser.add_argument("--branch-name", help="Name for the new branch (default: auto-generated)")
     mulesoft_parser.add_argument("--pr-title", help="PR title and commit message (default: auto-generated)")
@@ -556,9 +556,9 @@ def main():
     elif args.command == 'mulesoft-migr':
         # Generate values if not provided
         branch_name = args.branch_name or f"mulesoft-migration-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
-        commit_message = args.pr_title or f"Mulesoft Migration: {args.endpoint[:50]}..."
+        commit_message = args.pr_title or f"Mulesoft Migration: {args.prompt[:50]}..."
         
-        success = mulesoft_migr_command(args.prompt, args.endpoint, branch_name, commit_message)
+        success = mulesoft_migr_command(args.prompt, branch_name, commit_message)
         sys.exit(0 if success else 1)
 
 if __name__ == "__main__":
