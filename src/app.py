@@ -23,6 +23,12 @@ def datausa_largest_counties():
     resp = requests.get(url)
     return jsonify(resp.json())
 
+@app.route('/datausa/top-earning-state')
+def datausa_top_earning_state():
+    url = 'https://datausa.io/api/data?drilldowns=State&measures=Median+Household+Income&year=2023&order=desc&sort=Median+Household+Income&limit=1'
+    resp = requests.get(url)
+    return jsonify(resp.json())
+
 @app.route('/datausa/most-expensive-housing-state')
 def datausa_most_expensive_housing_state():
     url = 'https://datausa.io/api/data?drilldowns=State&measures=Median+Property+Value&year=2023&Geography=15'
