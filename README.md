@@ -61,7 +61,7 @@ gen-ai-poc/
 python src/app.py
 ```
 
-The application will be available at `http://localhost:8080`
+The application will be available at `http://localhost:80`
 
 ### Running Tests
 
@@ -78,14 +78,14 @@ docker build -f infra/Dockerfile -t gen-ai-poc .
 
 Run the container locally:
 ```bash
-docker run -p 8080:8080 gen-ai-poc
+docker run -p 80:80 gen-ai-poc
 ```
 
-The application will be available at `http://localhost:8080`
+The application will be available at `http://localhost:80`
 
 **Alternative: Build and run in one command:**
 ```bash
-docker build -f infra/Dockerfile -t gen-ai-poc . && docker run -p 8080:8080 gen-ai-poc
+docker build -f infra/Dockerfile -t gen-ai-poc . && docker run -p 80:80 gen-ai-poc
 ```
 
 ### Deploying to AWS ECR
