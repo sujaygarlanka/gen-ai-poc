@@ -164,6 +164,7 @@ python scripts/cli_tool.py update "Add input validation to user registration" \
 ## API Endpoints
 
 - `GET /hello` - Simple greeting endpoint
+- `GET /stations` - Get list of all train stations
 - `GET /datausa/top-earning-state` - State with highest median household income
 - `GET /datausa/youngest-large-county` - County with lowest median age
 - `GET /datausa/largest-counties` - Top 5 counties by population

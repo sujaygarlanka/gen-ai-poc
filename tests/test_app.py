@@ -8,6 +8,27 @@ def test_hello():
         assert response.status_code == 200
         assert response.get_json() == {'message': 'Hello, world!'}
 
+def test_stations():
+    with app.test_client() as client:
+        response = client.get('/stations')
+        assert response.status_code == 200
+        data = response.get_json()
+        assert isinstance(data, list)
+        assert len(data) > 0
+        
+        # Verify the structure of the first station
+        station = data[0]
+        assert 'id' in station
+        assert 'name' in station
+        assert 'city' in station
+        assert 'code' in station
+        
+        # Verify specific test data
+        assert station['id'] == 'st001'
+        assert station['name'] == 'Union Station'
+        assert station['city'] == 'New York'
+        assert station['code'] == 'NYS'
+
 def test_test_endpoint():
     with app.test_client() as client:
         response = client.get('/test')
