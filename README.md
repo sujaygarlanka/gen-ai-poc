@@ -18,8 +18,15 @@ gen-ai-poc/
 ├── .github/workflows/      # GitHub Actions
 │   ├── python-app.yml     # Test workflow
 │   └── deploy-to-aws.yml  # Deployment workflow
+├── docs/                   # Documentation
+│   └── API_PUBLIC.md      # Public API documentation
 └── requirements.txt        # Python dependencies
 ```
+
+## Documentation
+
+- **[Public API Documentation](docs/API_PUBLIC.md)** - Complete API reference with examples
+- **[README.md](README.md)** - Project overview and setup guide
 
 ## Prerequisites
 
@@ -112,7 +119,7 @@ docker push public.ecr.aws/b8p9r6a3/allwyn/gen-ai-poc:latest
 
 ### Using the CLI Tool
 
-The CLI tool provides two commands for working with Amazon Q agent and GitHub.
+The CLI tool provides three commands for working with Amazon Q agent and GitHub.
 
 #### Create Command (Full Workflow)
 
@@ -127,9 +134,7 @@ python scripts/cli_tool.py create "Add a new endpoint for user authentication"
 ```bash
 python scripts/cli_tool.py create "Implement OAuth2 authentication" \
   --branch-name "feature/oauth2-auth" \
-  --commit-message "Add OAuth2 authentication endpoints" \
-  --pr-title "Feature: OAuth2 Authentication" \
-  --pr-description "Implements OAuth2 authentication flow with Google and GitHub providers"
+  --pr-title "Feature: OAuth2 Authentication"
 ```
 
 #### Update Command (Quick Updates)
@@ -147,66 +152,58 @@ python scripts/cli_tool.py update "Add input validation to user registration" \
   --commit-message "Add comprehensive input validation for user registration form"
 ```
 
+#### Mulesoft Migration Command
+
+Downloads Mulesoft project, parses RAML endpoints, and migrates selected endpoint to Python.
+
+**Basic Usage:**
+```bash
+python scripts/cli_tool.py mulesoft-migr "Convert to AWS Lambda with DynamoDB"
+```
+
+**Advanced Usage:**
+```bash
+python scripts/cli_tool.py mulesoft-migr "Migrate to AWS Lambda with authentication" \
+  --branch-name "migrate-auth-api" \
+  --pr-title "Migrate Authentication API"
+```
+
 #### Command Options
 
 **Create Command Options:**
 - `prompt`: The prompt to send to Amazon Q agent (required)
 - `--branch-name`: Custom branch name (auto-generated if not provided)
-- `--commit-message`: Custom commit message (auto-generated if not provided)
-- `--pr-title`: Custom pull request title (auto-generated if not provided)
-- `--pr-description`: Custom pull request description
-- `--github-token`: GitHub personal access token (can also use GITHUB_TOKEN env var)
+- `--pr-title`: Custom PR title and commit message (auto-generated if not provided)
 
 **Update Command Options:**
 - `prompt`: The prompt to send to Amazon Q agent (required)
 - `--commit-message`: Custom commit message (auto-generated if not provided)
 
+**Mulesoft Migration Command Options:**
+- `prompt`: Additional requirements for the Amazon Q agent (required)
+- `--branch-name`: Custom branch name (auto-generated if not provided)
+- `--pr-title`: Custom PR title and commit message (auto-generated if not provided)
+
 ## API Endpoints
 
 - `GET /hello` - Simple greeting endpoint
-- `GET /stations` - Get list of all train stations (supports city filtering)
-- `GET /datausa/top-earning-state` - State with highest median household income
-- `GET /datausa/youngest-large-county` - County with lowest median age
-- `GET /datausa/largest-counties` - Top 5 counties by population
-- `GET /datausa/most-expensive-housing-state` - State with highest median property value
 
-### Stations Endpoint
+### Hello Endpoint
 
-**GET /stations**
+**GET /hello**
 
-Returns a list of all train stations.
+Returns a simple greeting message.
 
-**Query Parameters:**
-- `city` (optional): Filter stations by city name (case-insensitive)
-
-**Examples:**
+**Example:**
 ```bash
-# Get all stations
-curl http://localhost:80/stations
-
-# Get stations in New York
-curl http://localhost:80/stations?city=New%20York
-
-# Get stations in Chicago
-curl http://localhost:80/stations?city=chicago
+curl http://localhost:80/hello
 ```
 
 **Response Format:**
 ```json
-[
-  {
-    "id": "st001",
-    "name": "Union Station",
-    "city": "New York",
-    "code": "NYS"
-  },
-  {
-    "id": "st002",
-    "name": "Central Station",
-    "city": "Chicago",
-    "code": "CHI"
-  }
-]
+{
+  "message": "Hello, world!"
+}
 ```
 
 ## Deployment
