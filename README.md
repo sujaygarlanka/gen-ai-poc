@@ -170,4 +170,43 @@ The application is automatically deployed to AWS ECS when code is merged to the 
 - Python 3.11+
 - AWS CLI with Amazon Q configured
 - GitHub personal access token
-- Docker (for containerization) 
+- Docker (for containerization)
+
+## GitHub Actions Deployment
+
+### Prerequisites
+
+1. **AWS Credentials**: Create an IAM user with the following permissions:
+   - `AmazonEC2ContainerRegistryPublicPowerUser`
+   - `AmazonECS-FullAccess`
+
+2. **GitHub Secrets**: Add these secrets to your GitHub repository:
+   - `AWS_ACCESS_KEY_ID`: Your AWS access key
+   - `AWS_SECRET_ACCESS_KEY`: Your AWS secret key
+
+### Setup
+
+1. **Update Environment Variables**: Edit `.github/workflows/deploy.yml` and replace:
+   - `your-cluster-name` with your ECS cluster name
+   - `your-service-name` with your ECS service name
+   - `your-task-definition-family` with your task definition family name
+
+2. **Deploy**: The workflow will automatically run on:
+   - Push to `main` branch
+   - Manual trigger via GitHub Actions UI
+
+### What the Workflow Does
+
+1. **Build**: Creates Docker image for x86_64 architecture
+2. **Push**: Uploads to ECR Public Registry with commit SHA and latest tags
+3. **Update Task Definition**: Creates new revision with latest image
+4. **Deploy**: Updates ECS service with new task definition
+5. **Wait**: Ensures deployment completes successfully
+
+### Manual Deployment
+
+To manually trigger deployment:
+1. Go to your GitHub repository
+2. Click "Actions" tab
+3. Select "Deploy to AWS ECS" workflow
+4. Click "Run workflow" 
