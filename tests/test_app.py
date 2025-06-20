@@ -8,6 +8,12 @@ def test_hello():
         assert response.status_code == 200
         assert response.get_json() == {'message': 'Hello, world!'}
 
+def test_test_endpoint():
+    with app.test_client() as client:
+        response = client.get('/test')
+        assert response.status_code == 200
+        assert response.get_data(as_text=True) == 'this is a test'
+
 def test_datausa_top_earning_state():
     mock_response = Mock()
     mock_response.json.return_value = {

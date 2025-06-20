@@ -7,6 +7,10 @@ app = Flask(__name__)
 def hello():
     return jsonify({'message': 'Hello, world!'})
 
+@app.route('/test')
+def test():
+    return 'this is a test'
+
 @app.route('/datausa/top-earning-state')
 def datausa_top_earning_state():
     url = 'https://datausa.io/api/data?drilldowns=State&measures=Median+Household+Income&year=2023&order=desc&sort=Median+Household+Income&limit=1'
