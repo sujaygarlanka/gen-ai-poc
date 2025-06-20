@@ -33,7 +33,7 @@ def create_branch(branch_name):
 
 def call_amazon_q_agent(prompt):
     """Call Amazon Q CLI agent with the given prompt."""
-    print(f"Calling Amazon Q agent with prompt: {prompt}")
+    print(f"Calling Amazon Q agent with prompt")
     
     # This is a placeholder - replace with actual Amazon Q CLI command
     # Example: aws q generate-code --prompt "your prompt here"

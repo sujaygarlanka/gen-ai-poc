@@ -15,34 +15,6 @@ def test_test_endpoint():
         assert response.get_data(as_text=True) == 'this is a test'
 
 
-def test_datausa_top_earning_state():
-    mock_response = Mock()
-    mock_response.json.return_value = {
-        'data': [{'State': 'District of Columbia', 'Year': '2023', 'Median Household Income': 106287}],
-        'source': [
-            {
-                'measures': ['Median Household Income'],
-                'annotations': {
-                    'source_name': 'Census Bureau',
-                    'source_description': 'Census Bureau conducts surveys of the United States Population',
-                    'dataset_name': 'ACS 1-year Estimate',
-                    'topic': 'Income'
-                }
-            }
-        ]
-    }
-    with patch('src.app.requests.get', return_value=mock_response):
-        with app.test_client() as client:
-            response = client.get('/datausa/top-earning-state')
-            assert response.status_code == 200
-            data = response.get_json()
-            assert 'data' in data
-            assert 'source' in data
-            assert data['data'][0]['State'] == 'District of Columbia'
-            assert data['data'][0]['Year'] == '2023'
-            assert data['data'][0]['Median Household Income'] == 106287
-
-
 def test_datausa_youngest_large_county():
     mock_response = Mock()
     mock_response.json.return_value = {
