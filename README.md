@@ -164,10 +164,50 @@ python scripts/cli_tool.py update "Add input validation to user registration" \
 ## API Endpoints
 
 - `GET /hello` - Simple greeting endpoint
+- `GET /stations` - Get list of all train stations (supports city filtering)
 - `GET /datausa/top-earning-state` - State with highest median household income
 - `GET /datausa/youngest-large-county` - County with lowest median age
 - `GET /datausa/largest-counties` - Top 5 counties by population
 - `GET /datausa/most-expensive-housing-state` - State with highest median property value
+
+### Stations Endpoint
+
+**GET /stations**
+
+Returns a list of all train stations.
+
+**Query Parameters:**
+- `city` (optional): Filter stations by city name (case-insensitive)
+
+**Examples:**
+```bash
+# Get all stations
+curl http://localhost:80/stations
+
+# Get stations in New York
+curl http://localhost:80/stations?city=New%20York
+
+# Get stations in Chicago
+curl http://localhost:80/stations?city=chicago
+```
+
+**Response Format:**
+```json
+[
+  {
+    "id": "st001",
+    "name": "Union Station",
+    "city": "New York",
+    "code": "NYS"
+  },
+  {
+    "id": "st002",
+    "name": "Central Station",
+    "city": "Chicago",
+    "code": "CHI"
+  }
+]
+```
 
 ## Deployment
 

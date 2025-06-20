@@ -14,6 +14,67 @@ def test_test_endpoint():
         assert response.status_code == 200
         assert response.get_data(as_text=True) == 'this is a test'
 
+def test_stations_all():
+    """Test getting all stations without filter"""
+    with app.test_client() as client:
+        response = client.get('/stations')
+        assert response.status_code == 200
+        data = response.get_json()
+        assert isinstance(data, list)
+        assert len(data) == 8  # Total number of stations in STATIONS_DATA
+        
+        # Check structure of first station
+        station = data[0]
+        assert 'id' in station
+        assert 'name' in station
+        assert 'city' in station
+        assert 'code' in station
+
+def test_stations_filter_by_city():
+    """Test filtering stations by city"""
+    with app.test_client() as client:
+        # Test filtering by New York (should return 2 stations)
+        response = client.get('/stations?city=New York')
+        assert response.status_code == 200
+        data = response.get_json()
+        assert isinstance(data, list)
+        assert len(data) == 2
+        for station in data:
+            assert station['city'] == 'New York'
+        
+        # Test filtering by Chicago (should return 1 station)
+        response = client.get('/stations?city=Chicago')
+        assert response.status_code == 200
+        data = response.get_json()
+        assert len(data) == 1
+        assert data[0]['city'] == 'Chicago'
+        assert data[0]['code'] == 'CHI'
+
+def test_stations_filter_case_insensitive():
+    """Test that city filtering is case-insensitive"""
+    with app.test_client() as client:
+        # Test lowercase
+        response = client.get('/stations?city=chicago')
+        assert response.status_code == 200
+        data = response.get_json()
+        assert len(data) == 1
+        assert data[0]['city'] == 'Chicago'
+        
+        # Test uppercase
+        response = client.get('/stations?city=BOSTON')
+        assert response.status_code == 200
+        data = response.get_json()
+        assert len(data) == 1
+        assert data[0]['city'] == 'Boston'
+
+def test_stations_filter_no_results():
+    """Test filtering with city that doesn't exist"""
+    with app.test_client() as client:
+        response = client.get('/stations?city=NonExistentCity')
+        assert response.status_code == 200
+        data = response.get_json()
+        assert isinstance(data, list)
+        assert len(data) == 0
 
 def test_datausa_youngest_large_county():
     mock_response = Mock()
@@ -64,4 +125,4 @@ def test_datausa_most_expensive_housing_state():
             data = response.get_json()
             assert 'data' in data
             assert data['data'][0]['State'] == 'Hawaii'
-            assert data['data'][0]['Median Property Value'] == 808200 
+            assert data['data'][0]['Median Property Value'] == 808200
