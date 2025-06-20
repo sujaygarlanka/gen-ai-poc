@@ -237,6 +237,23 @@ def read_raml_file():
         print(f"Error reading api.raml file: {e}")
         return None
 
+def sanitize_raml_content(raml_content):
+    """Sanitize RAML content to avoid shell command issues."""
+    if not raml_content:
+        return ""
+    
+    # Replace problematic characters
+    sanitized = raml_content.replace('"', '\\"')  # Escape double quotes
+    sanitized = sanitized.replace("'", "\\'")     # Escape single quotes
+    sanitized = sanitized.replace('\n', '\\n')    # Escape newlines
+    sanitized = sanitized.replace('\r', '\\r')    # Escape carriage returns
+    
+    # Truncate if too long to avoid command line length issues
+    if len(sanitized) > 8000:
+        sanitized = sanitized[:8000] + "... [RAML content truncated]"
+    
+    return sanitized
+
 def mulesoft_migr_command(prompt, endpoint, branch_name, commit_message):
     """Mulesoft migration command: full workflow with new branch and PR."""
     print("🔄 Mulesoft Migration mode: Creating new branch and pull request")
@@ -264,14 +281,16 @@ def mulesoft_migr_command(prompt, endpoint, branch_name, commit_message):
         
         # Step 4: Call Amazon Q agent with endpoint and RAML context
         if raml_content:
+            # Sanitize RAML content
+            sanitized_raml = sanitize_raml_content(raml_content)
             enhanced_prompt = f"""Migrate the following Mulesoft endpoint to python: {endpoint}
 
 API Specification (RAML):
-{raml_content}
+{sanitized_raml}
 
 Additional requirements: {prompt}"""
         else:
-            enhanced_prompt = f"Migrate the following Mulesoft endpoint to AWS: {endpoint}. {prompt}"
+            enhanced_prompt = f"Migrate the following Mulesoft endpoint to python: {endpoint}. {prompt}"
         
         print("Calling Amazon Q agent with RAML specification...")
         agent_response = call_amazon_q_agent(enhanced_prompt)
