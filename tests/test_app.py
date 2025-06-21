@@ -190,3 +190,86 @@ def test_stations_example_data_matches_raml(client):
     assert chi_station is not None
     assert chi_station['name'] == 'Central Station'
     assert chi_station['city'] == 'Chicago'
+
+def test_filter_stations_by_city(client):
+    """Test filtering stations by city."""
+    response = client.get('/stations?city=New York')
+    assert response.status_code == 200
+    
+    data = response.get_json()
+    assert isinstance(data, list)
+    assert len(data) == 1
+    assert data[0]['city'] == 'New York'
+    assert data[0]['name'] == 'Union Station'
+
+def test_filter_stations_by_city_case_insensitive(client):
+    """Test filtering stations by city is case insensitive."""
+    response = client.get('/stations?city=new york')
+    assert response.status_code == 200
+    
+    data = response.get_json()
+    assert len(data) == 1
+    assert data[0]['city'] == 'New York'
+
+def test_filter_stations_by_code(client):
+    """Test filtering stations by code."""
+    response = client.get('/stations?code=CHI')
+    assert response.status_code == 200
+    
+    data = response.get_json()
+    assert isinstance(data, list)
+    assert len(data) == 1
+    assert data[0]['code'] == 'CHI'
+    assert data[0]['name'] == 'Central Station'
+
+def test_filter_stations_by_code_case_insensitive(client):
+    """Test filtering stations by code is case insensitive."""
+    response = client.get('/stations?code=chi')
+    assert response.status_code == 200
+    
+    data = response.get_json()
+    assert len(data) == 1
+    assert data[0]['code'] == 'CHI'
+
+def test_filter_stations_by_city_and_code(client):
+    """Test filtering stations by both city and code."""
+    response = client.get('/stations?city=Chicago&code=CHI')
+    assert response.status_code == 200
+    
+    data = response.get_json()
+    assert len(data) == 1
+    assert data[0]['city'] == 'Chicago'
+    assert data[0]['code'] == 'CHI'
+
+def test_filter_stations_no_matches(client):
+    """Test filtering stations with no matches returns empty list."""
+    response = client.get('/stations?city=NonExistentCity')
+    assert response.status_code == 200
+    
+    data = response.get_json()
+    assert isinstance(data, list)
+    assert len(data) == 0
+
+def test_filter_stations_conflicting_filters(client):
+    """Test filtering with conflicting filters returns empty list."""
+    response = client.get('/stations?city=New York&code=CHI')
+    assert response.status_code == 200
+    
+    data = response.get_json()
+    assert len(data) == 0
+
+def test_filter_stations_empty_parameters(client):
+    """Test filtering with empty parameters returns all stations."""
+    response = client.get('/stations?city=&code=')
+    assert response.status_code == 200
+    
+    data = response.get_json()
+    assert len(data) == 5  # All stations should be returned
+
+def test_filter_stations_whitespace_parameters(client):
+    """Test filtering with whitespace-only parameters returns all stations."""
+    response = client.get('/stations?city=   &code=   ')
+    assert response.status_code == 200
+    
+    data = response.get_json()
+    assert len(data) == 5  # All stations should be returned

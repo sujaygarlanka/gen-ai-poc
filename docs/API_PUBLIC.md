@@ -84,11 +84,27 @@ curl -X GET https://api.gen-ai-poc.com/hello
 
 **GET** `/stations`
 
-Retrieves a list of all available train stations with their details.
+Retrieves a list of train stations with optional location-based filtering.
 
-#### Request
+#### Query Parameters
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `city` | string | No | Filter stations by city name (case-insensitive) |
+| `code` | string | No | Filter stations by station code (case-insensitive) |
+
+#### Request Examples
 ```bash
+# Get all stations
 curl -X GET https://api.gen-ai-poc.com/stations
+
+# Filter by city
+curl -X GET "https://api.gen-ai-poc.com/stations?city=New York"
+
+# Filter by code
+curl -X GET "https://api.gen-ai-poc.com/stations?code=CHI"
+
+# Filter by both city and code
+curl -X GET "https://api.gen-ai-poc.com/stations?city=Chicago&code=CHI"
 ```
 
 #### Response
@@ -136,6 +152,13 @@ curl -X GET https://api.gen-ai-poc.com/stations
 | `name` | string | Full name of the station |
 | `city` | string | City where the station is located |
 | `code` | string | Short code identifier for the station |
+
+#### Filtering Behavior
+- **Case Insensitive**: All filters are case-insensitive
+- **Exact Match**: Filters require exact matches (not partial)
+- **Multiple Filters**: When multiple filters are provided, stations must match ALL criteria
+- **Empty Results**: Returns empty array if no stations match the criteria
+- **Empty Parameters**: Empty or whitespace-only parameters are ignored
 
 #### Error Responses
 **500 Internal Server Error**
@@ -189,9 +212,16 @@ print(greeting)  # "Hello, world!"
 
 **JavaScript (Fetch API)**
 ```javascript
-async function getStations() {
+async function getStations(filters = {}) {
   try {
-    const response = await fetch('https://api.gen-ai-poc.com/stations');
+    // Build query string from filters
+    const queryParams = new URLSearchParams();
+    if (filters.city) queryParams.append('city', filters.city);
+    if (filters.code) queryParams.append('code', filters.code);
+    
+    const url = `https://api.gen-ai-poc.com/stations${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+    const response = await fetch(url);
+    
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -209,18 +239,27 @@ async function getStations() {
   }
 }
 
-// Usage
-getStations();
+// Usage examples
+getStations(); // Get all stations
+getStations({ city: 'New York' }); // Get stations in New York
+getStations({ code: 'CHI' }); // Get stations with code CHI
+getStations({ city: 'Chicago', code: 'CHI' }); // Get stations matching both filters
 ```
 
 **Python (Requests)**
 ```python
 import requests
 
-def get_stations():
-    """Fetch all train stations."""
+def get_stations(city=None, code=None):
+    """Fetch train stations with optional filtering."""
     try:
-        response = requests.get('https://api.gen-ai-poc.com/stations')
+        params = {}
+        if city:
+            params['city'] = city
+        if code:
+            params['code'] = code
+            
+        response = requests.get('https://api.gen-ai-poc.com/stations', params=params)
         response.raise_for_status()
         stations = response.json()
         
@@ -233,22 +272,31 @@ def get_stations():
         print(f"Error fetching stations: {e}")
         return []
 
+def find_stations_by_city(city):
+    """Find all stations in a specific city."""
+    return get_stations(city=city)
+
 def find_station_by_code(code):
     """Find a station by its code."""
-    stations = get_stations()
-    for station in stations:
-        if station['code'].upper() == code.upper():
-            return station
-    return None
+    stations = get_stations(code=code)
+    return stations[0] if stations else None
 
 # Usage examples
-stations = get_stations()
-print(f"Total stations: {len(stations)}")
+all_stations = get_stations()
+print(f"Total stations: {len(all_stations)}")
+
+# Filter by city
+ny_stations = find_stations_by_city('New York')
+print(f"Stations in New York: {len(ny_stations)}")
 
 # Find specific station
-nys_station = find_station_by_code('NYS')
-if nys_station:
-    print(f"Found: {nys_station['name']} in {nys_station['city']}")
+chi_station = find_station_by_code('CHI')
+if chi_station:
+    print(f"Found: {chi_station['name']} in {chi_station['city']}")
+
+# Case insensitive filtering
+stations_lower = get_stations(city='new york')
+print(f"Case insensitive search found: {len(stations_lower)} stations")
 ```
 
 **Python (aiohttp - Async)**
@@ -256,11 +304,17 @@ if nys_station:
 import aiohttp
 import asyncio
 
-async def get_stations_async():
-    """Asynchronously fetch all train stations."""
+async def get_stations_async(city=None, code=None):
+    """Asynchronously fetch train stations with optional filtering."""
     async with aiohttp.ClientSession() as session:
         try:
-            async with session.get('https://api.gen-ai-poc.com/stations') as response:
+            params = {}
+            if city:
+                params['city'] = city
+            if code:
+                params['code'] = code
+                
+            async with session.get('https://api.gen-ai-poc.com/stations', params=params) as response:
                 if response.status == 200:
                     stations = await response.json()
                     return stations
@@ -271,8 +325,14 @@ async def get_stations_async():
             return []
 
 # Usage
-stations = asyncio.run(get_stations_async())
-print(f"Retrieved {len(stations)} stations")
+async def main():
+    all_stations = await get_stations_async()
+    print(f"Retrieved {len(all_stations)} stations")
+    
+    ny_stations = await get_stations_async(city='New York')
+    print(f"New York stations: {len(ny_stations)}")
+
+asyncio.run(main())
 ```
 
 **cURL Examples**
@@ -280,14 +340,23 @@ print(f"Retrieved {len(stations)} stations")
 # Get all stations
 curl https://api.gen-ai-poc.com/stations
 
-# Pretty print JSON response
-curl https://api.gen-ai-poc.com/stations | python -m json.tool
+# Filter by city
+curl "https://api.gen-ai-poc.com/stations?city=New%20York"
 
-# Save response to file
-curl https://api.gen-ai-poc.com/stations -o stations.json
+# Filter by code
+curl "https://api.gen-ai-poc.com/stations?code=CHI"
 
-# Include response headers
-curl -i https://api.gen-ai-poc.com/stations
+# Filter by both (URL encoded)
+curl "https://api.gen-ai-poc.com/stations?city=Chicago&code=CHI"
+
+# Case insensitive filtering
+curl "https://api.gen-ai-poc.com/stations?city=new%20york"
+
+# Pretty print filtered results
+curl "https://api.gen-ai-poc.com/stations?city=Chicago" | python -m json.tool
+
+# Save filtered results to file
+curl "https://api.gen-ai-poc.com/stations?code=NYS" -o ny_station.json
 ```
 
 **Node.js (Express Integration)**
@@ -296,20 +365,38 @@ const express = require('express');
 const axios = require('axios');
 const app = express();
 
-// Endpoint to get stations and format them
-app.get('/api/formatted-stations', async (req, res) => {
+// Endpoint to get stations with filtering
+app.get('/api/stations', async (req, res) => {
   try {
-    const response = await axios.get('https://api.gen-ai-poc.com/stations');
+    const { city, code } = req.query;
+    const params = {};
+    
+    if (city) params.city = city;
+    if (code) params.code = code;
+    
+    const response = await axios.get('https://api.gen-ai-poc.com/stations', { params });
     const stations = response.data;
     
-    // Format stations for frontend
-    const formattedStations = stations.map(station => ({
-      value: station.code,
-      label: `${station.name} - ${station.city}`,
-      city: station.city
-    }));
+    res.json({
+      total: stations.length,
+      filters: params,
+      stations: stations
+    });
+  } catch (error) {
+    console.error('Error fetching stations:', error);
+    res.status(500).json({ error: 'Failed to fetch stations' });
+  }
+});
+
+// Endpoint to get stations by city
+app.get('/api/stations/city/:city', async (req, res) => {
+  try {
+    const { city } = req.params;
+    const response = await axios.get('https://api.gen-ai-poc.com/stations', {
+      params: { city }
+    });
     
-    res.json(formattedStations);
+    res.json(response.data);
   } catch (error) {
     console.error('Error fetching stations:', error);
     res.status(500).json({ error: 'Failed to fetch stations' });

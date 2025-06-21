@@ -51,15 +51,26 @@ def hello():
 @app.route('/stations', methods=['GET'])
 def get_stations():
     """
-    Get list of all train stations.
+    Get list of train stations with optional location-based filtering.
     
+    Query Parameters:
+        city (str, optional): Filter stations by city name (case-insensitive)
+        code (str, optional): Filter stations by station code (case-insensitive)
+        
     Returns:
         JSON response containing list of stations with their details.
         Each station includes: id, name, city, and code.
     
     Response Format:
         200 OK: List of station objects
+        400 Bad Request: Invalid query parameters
         500 Internal Server Error: Server error occurred
+    
+    Example Requests:
+        GET /stations - Returns all stations
+        GET /stations?city=New York - Returns stations in New York
+        GET /stations?code=CHI - Returns stations with code CHI
+        GET /stations?city=Chicago&code=CHI - Returns stations matching both filters
     
     Example Response:
         [
@@ -68,28 +79,35 @@ def get_stations():
                 "name": "Union Station",
                 "city": "New York",
                 "code": "NYS"
-            },
-            {
-                "id": "st002",
-                "name": "Central Station",
-                "city": "Chicago",
-                "code": "CHI"
             }
         ]
     """
     try:
-        logger.info("Fetching all train stations")
+        # Get query parameters
+        city_filter = request.args.get('city', '').strip()
+        code_filter = request.args.get('code', '').strip()
         
-        # Validate data structure before returning
-        validated_stations = []
+        logger.info(f"Fetching stations with filters - city: '{city_filter}', code: '{code_filter}'")
+        
+        # Validate data structure and apply filters
+        filtered_stations = []
         for station in STATIONS_DATA:
-            if _validate_station_data(station):
-                validated_stations.append(station)
-            else:
+            if not _validate_station_data(station):
                 logger.warning(f"Invalid station data found: {station}")
+                continue
+            
+            # Apply city filter (case-insensitive)
+            if city_filter and station['city'].lower() != city_filter.lower():
+                continue
+                
+            # Apply code filter (case-insensitive)
+            if code_filter and station['code'].lower() != code_filter.lower():
+                continue
+            
+            filtered_stations.append(station)
         
-        logger.info(f"Successfully retrieved {len(validated_stations)} stations")
-        return jsonify(validated_stations), 200
+        logger.info(f"Successfully retrieved {len(filtered_stations)} stations after filtering")
+        return jsonify(filtered_stations), 200
         
     except Exception as e:
         logger.error(f"Error retrieving stations: {str(e)}")

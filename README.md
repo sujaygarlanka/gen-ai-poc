@@ -187,7 +187,7 @@ python scripts/cli_tool.py mulesoft-migr "Migrate to AWS Lambda with authenticat
 ## API Endpoints
 
 - `GET /hello` - Simple greeting endpoint
-- `GET /stations` - Retrieve all train stations
+- `GET /stations` - Retrieve train stations with optional location filtering
 
 ### Hello Endpoint
 
@@ -211,11 +211,25 @@ curl http://localhost:80/hello
 
 **GET /stations**
 
-Returns a list of all available train stations with their details. This endpoint was migrated from a Mulesoft RAML specification to Python Flask.
+Returns a list of train stations with optional location-based filtering. This endpoint was migrated from a Mulesoft RAML specification to Python Flask.
 
-**Example:**
+**Query Parameters:**
+- `city` (optional): Filter stations by city name (case-insensitive)
+- `code` (optional): Filter stations by station code (case-insensitive)
+
+**Examples:**
 ```bash
+# Get all stations
 curl http://localhost:80/stations
+
+# Filter by city
+curl "http://localhost:80/stations?city=New York"
+
+# Filter by code
+curl "http://localhost:80/stations?code=CHI"
+
+# Filter by both city and code
+curl "http://localhost:80/stations?city=Chicago&code=CHI"
 ```
 
 **Response Format:**
@@ -241,6 +255,13 @@ curl http://localhost:80/stations
 - `name` (string): Full name of the station
 - `city` (string): City where the station is located
 - `code` (string): Short code identifier for the station
+
+**Filtering Behavior:**
+- All filters are case-insensitive
+- Filters require exact matches (not partial)
+- Multiple filters must all match (AND logic)
+- Empty or whitespace-only parameters are ignored
+- Returns empty array if no stations match the criteria
 
 **Testing the Migration:**
 ```bash
