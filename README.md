@@ -187,6 +187,7 @@ python scripts/cli_tool.py mulesoft-migr "Migrate to AWS Lambda with authenticat
 ## API Endpoints
 
 - `GET /hello` - Simple greeting endpoint
+- `GET /stations` - Retrieve train stations with optional location filtering
 
 ### Hello Endpoint
 
@@ -204,6 +205,68 @@ curl http://localhost:80/hello
 {
   "message": "Hello, world!"
 }
+```
+
+### Stations Endpoint
+
+**GET /stations**
+
+Returns a list of train stations with optional location-based filtering. This endpoint was migrated from a Mulesoft RAML specification to Python Flask.
+
+**Query Parameters:**
+- `city` (optional): Filter stations by city name (case-insensitive)
+- `code` (optional): Filter stations by station code (case-insensitive)
+
+**Examples:**
+```bash
+# Get all stations
+curl http://localhost:80/stations
+
+# Filter by city
+curl "http://localhost:80/stations?city=New York"
+
+# Filter by code
+curl "http://localhost:80/stations?code=CHI"
+
+# Filter by both city and code
+curl "http://localhost:80/stations?city=Chicago&code=CHI"
+```
+
+**Response Format:**
+```json
+[
+  {
+    "id": "st001",
+    "name": "Union Station",
+    "city": "New York",
+    "code": "NYS"
+  },
+  {
+    "id": "st002",
+    "name": "Central Station",
+    "city": "Chicago",
+    "code": "CHI"
+  }
+]
+```
+
+**Station Object Fields:**
+- `id` (string): Unique identifier for the station
+- `name` (string): Full name of the station
+- `city` (string): City where the station is located
+- `code` (string): Short code identifier for the station
+
+**Filtering Behavior:**
+- All filters are case-insensitive
+- Filters require exact matches (not partial)
+- Multiple filters must all match (AND logic)
+- Empty or whitespace-only parameters are ignored
+- Returns empty array if no stations match the criteria
+
+**Testing the Migration:**
+```bash
+# Run the comprehensive migration test
+python scripts/test_stations_endpoint.py
 ```
 
 ## Deployment
