@@ -240,6 +240,46 @@ def get_github_info():
         print("Error: Could not parse GitHub repository info")
         return None, None
 
+def update_pr_body_with_diff(branch_name):
+    """Update the PR body with the latest diff using Amazon Q agent."""
+    try:
+        # Get diff from main to current branch
+        diff_content = get_diff_from_main()
+        
+        if not diff_content:
+            print("No changes detected to update PR body")
+            return False
+        
+        # Generate new PR summary using Amazon Q agent
+        pr_summary = generate_pr_summary(diff_content)
+        
+        # Update the PR body using GitHub CLI
+        print("Updating PR body with latest changes...")
+        
+        # Create temporary file with new body content
+        import tempfile
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as temp_file:
+            temp_file.write(pr_summary)
+            temp_file_path = temp_file.name
+        
+        # Update PR body using GitHub CLI
+        command = f'gh pr edit {branch_name} --body-file {temp_file_path}'
+        result = run_command(command)
+        
+        # Clean up temporary file
+        os.unlink(temp_file_path)
+        
+        if result:
+            print("✅ PR body updated successfully!")
+            return True
+        else:
+            print("Failed to update PR body")
+            return False
+            
+    except Exception as e:
+        print(f"Error updating PR body: {e}")
+        return False
+
 def update_command(prompt, commit_message):
     """Update command: call Amazon Q agent and push changes to current branch."""
     print("🔄 Update mode: Working on current branch")
@@ -280,6 +320,12 @@ def update_command(prompt, commit_message):
         if not push_current_branch():
             print("Failed to push changes")
             return False
+        
+        # Step 5: Update PR body if branch has an open PR
+        current_branch = run_command("git branch --show-current")
+        if current_branch:
+            print("Checking for open PR to update...")
+            update_pr_body_with_diff(current_branch)
         
         print("✅ Update completed successfully!")
         return True
