@@ -187,6 +187,7 @@ python scripts/cli_tool.py mulesoft-migr "Migrate to AWS Lambda with authenticat
 ## API Endpoints
 
 - `GET /hello` - Simple greeting endpoint
+- `GET /stations` - Retrieve all train stations
 
 ### Hello Endpoint
 
@@ -204,6 +205,47 @@ curl http://localhost:80/hello
 {
   "message": "Hello, world!"
 }
+```
+
+### Stations Endpoint
+
+**GET /stations**
+
+Returns a list of all available train stations with their details. This endpoint was migrated from a Mulesoft RAML specification to Python Flask.
+
+**Example:**
+```bash
+curl http://localhost:80/stations
+```
+
+**Response Format:**
+```json
+[
+  {
+    "id": "st001",
+    "name": "Union Station",
+    "city": "New York",
+    "code": "NYS"
+  },
+  {
+    "id": "st002",
+    "name": "Central Station",
+    "city": "Chicago",
+    "code": "CHI"
+  }
+]
+```
+
+**Station Object Fields:**
+- `id` (string): Unique identifier for the station
+- `name` (string): Full name of the station
+- `city` (string): City where the station is located
+- `code` (string): Short code identifier for the station
+
+**Testing the Migration:**
+```bash
+# Run the comprehensive migration test
+python scripts/test_stations_endpoint.py
 ```
 
 ## Deployment
